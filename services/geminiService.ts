@@ -15,7 +15,8 @@ export async function getRentalAIAnalysis(
     }
     
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use gemini-1.5-flash which is stable and widely supported
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const contextString = JSON.stringify(dataContext, null, 2);
     
@@ -114,6 +115,18 @@ export async function getRentalAIAnalysis(
       return language === 'fr' 
         ? "❌ Clé API Gemini non configurée. Veuillez ajouter VITE_GEMINI_API_KEY à votre fichier .env" 
         : "❌ مفتاح API Gemini غير مكون. يرجى إضافة VITE_GEMINI_API_KEY إلى ملف .env الخاص بك";
+    }
+    
+    if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+      return language === 'fr' 
+        ? "❌ Erreur Gemini: Modèle non disponible ou clé API invalide. Vérifiez votre clé API sur https://console.cloud.google.com" 
+        : "❌ خطأ Gemini: النموذج غير متاح أو مفتاح API غير صحيح. تحقق من مفتاح API الخاص بك على https://console.cloud.google.com";
+    }
+    
+    if (errorMessage.includes('PERMISSION_DENIED') || errorMessage.includes('403')) {
+      return language === 'fr' 
+        ? "❌ Erreur: Votre clé API n'a pas les permissions nécessaires. Habilitez l'API Generative AI dans Google Cloud Console." 
+        : "❌ خطأ: مفتاح API الخاص بك لا يحتوي على الأذونات اللازمة. قم بتفعيل API Generative AI في وحدة التحكم بـ Google Cloud.";
     }
     
     return language === 'fr' 
